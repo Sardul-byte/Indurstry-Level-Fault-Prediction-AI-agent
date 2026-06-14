@@ -20,11 +20,11 @@ async def test_postmortem_agent_complete_inputs():
     # Supply dummy objects for all 5 prior stages
     state = {
         "investigation_id": "test-id-123",
-        "alert_summary": AsyncMock(),
-        "log_summary": AsyncMock(),
-        "retrieval_context": AsyncMock(),
-        "rca_result": AsyncMock(),
-        "remediation_list": AsyncMock(),
+        "alert_summary": MagicMock(),
+        "log_summary": MagicMock(),
+        "retrieval_context": MagicMock(),
+        "rca_result": MagicMock(),
+        "remediation_list": MagicMock(),
     }
 
     mock_pm = PostmortemSchema(
@@ -69,10 +69,10 @@ async def test_postmortem_agent_missing_inputs():
     state = {
         "investigation_id": "test-id-123",
         "alert_summary": None,
-        "log_summary": AsyncMock(),
+        "log_summary": MagicMock(),
         "retrieval_context": None,
-        "rca_result": AsyncMock(),
-        "remediation_list": AsyncMock(),
+        "rca_result": MagicMock(),
+        "remediation_list": MagicMock(),
     }
 
     res = await agent.run(state)
