@@ -9,8 +9,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy dependency manifests first for layer-cache efficiency
-COPY pyproject.toml ./
+# Copy dependency manifests and package sources first for pip install
+COPY pyproject.toml README.md ./
+COPY app ./app
 
 # Install dependencies into an explicit prefix so we can copy them cleanly
 RUN pip install --upgrade pip \

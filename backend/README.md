@@ -4,7 +4,7 @@ Python/FastAPI backend for the AI Incident Response Commander platform.
 
 ## Requirements
 
-- Python 3.11+
+- Python 3.10+
 - [uv](https://docs.astral.sh/uv/) (recommended) or pip
 
 ## Setup
