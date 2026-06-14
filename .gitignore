@@ -37,3 +37,9 @@ Thumbs.db
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Python build artifacts
+*.egg-info/
+dist/
+build/
+
