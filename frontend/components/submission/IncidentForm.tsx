@@ -13,6 +13,56 @@ import {
   UploadCloud
 } from "lucide-react";
 
+const TEMPLATES = [
+  {
+    name: "Database Pool Exhaustion",
+    service: "payment-service",
+    env: "production",
+    alert: JSON.stringify({
+      event: "DATABASE_CONNECTION_POOL_EXHAUSTED",
+      severity: "critical",
+      service: "payment-service",
+      details: {
+        pool_size: 50,
+        active_connections: 50,
+        waiting_requests: 124
+      }
+    }, null, 2),
+    logs: `2026-06-16T02:00:01Z [WARNING] connection pool size reached limit of 50\n2026-06-16T02:00:03Z [ERROR] failed to acquire connection to database 'payment_db' within 5000ms\n2026-06-16T02:00:05Z [CRITICAL] InternalServerError: Database connection timeout at checkout flow.\n2026-06-16T02:00:08Z [INFO] attempting automatic pool reconnection...`,
+    fileName: "payment_db_exhaustion.log"
+  },
+  {
+    name: "Redis Cache Outage",
+    service: "auth-service",
+    env: "staging",
+    alert: JSON.stringify({
+      event: "REDIS_CONNECTION_REFUSED",
+      severity: "warning",
+      service: "auth-service",
+      details: {
+        redis_host: "cache.internal.net",
+        port: 6379,
+        error_code: "ECONNREFUSED"
+      }
+    }, null, 2),
+    logs: `2026-06-16T02:10:00Z [INFO] initialized auth-service on port 3000\n2026-06-16T02:10:02Z [WARNING] Redis client disconnected. Attempting to reconnect...\n2026-06-16T02:10:05Z [ERROR] Redis connection error: connect ECONNREFUSED 10.0.4.12:6379\n2026-06-16T02:10:08Z [WARNING] Serving fallback cache requests from local memory store.`,
+    fileName: "redis_auth_error.log"
+  },
+  {
+    name: "Kubernetes OOM Crash",
+    service: "api-gateway",
+    env: "production",
+    alert: JSON.stringify({
+      event: "KUBERNETES_OOM_KILLED",
+      severity: "critical",
+      pod: "api-gateway-7f4d9b6c-8x2z",
+      exit_code: 137
+    }, null, 2),
+    logs: `2026-06-16T01:50:00Z [INFO] system metrics: heap_used=892MB, limit=1024MB\n2026-06-16T01:50:15Z [WARNING] Garbage collection duration exceeded 1500ms (GC overhead limit exceeded)\n2026-06-16T01:50:30Z [CRITICAL] Memory allocation of 128MB failed.\n2026-06-16T01:50:31Z [INFO] Kernel: Out of memory: Kill process 1242 (node) score 950 or sacrifice child`,
+    fileName: "kubernetes_oom.log"
+  }
+];
+
 interface IncidentFormProps {
   onSuccess: (investigationId: string) => void;
 }
@@ -28,10 +78,28 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [globalError, setGlobalError] = useState<string | null>(null);
 
+  const loadTemplate = (tpl: typeof TEMPLATES[0]) => {
+    setAlertText(tpl.alert);
+    setServiceName(tpl.service);
+    setEnvironment(tpl.env);
+    
+    // Create mock File object
+    const file = new File([tpl.logs], tpl.fileName, { type: "text/plain" });
+    setLogFile(file);
+
+    // Set local timestamp
+    const now = new Date();
+    const formatted = now.toISOString().slice(0, 16);
+    setTimestamp(formatted);
+
+    // Reset validations
+    setErrors({});
+    setGlobalError(null);
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     if (file) {
-      // Validate extension (Requirement 14.1: .txt or .json only)
       const isTxt = file.name.endsWith(".txt");
       const isJson = file.name.endsWith(".json");
       if (!isTxt && !isJson) {
@@ -40,7 +108,6 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
         return;
       }
 
-      // Validate size (Requirement 14.1: max 10MB)
       const maxSize = 10 * 1024 * 1024;
       if (file.size > maxSize) {
         setErrors((prev) => ({ ...prev, logFile: "Log file size exceeds the 10 MB limit." }));
@@ -65,7 +132,6 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
 
     const validationErrors: Record<string, string> = {};
 
-    // Validate alert length (Requirement 14.1: max 10k chars)
     if (!alertText.trim()) {
       validationErrors.alertText = "Alert payload is required.";
     } else if (alertText.length > 10000) {
@@ -83,7 +149,6 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
     }
 
     try {
-      // 1. Read file content as text
       const logs = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result as string);
@@ -91,19 +156,15 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
         reader.readAsText(logFile!);
       });
 
-      // 2. Parse alert payload
       let alert_data: Record<string, any> = {};
       try {
         alert_data = JSON.parse(alertText);
       } catch {
-        // If not valid JSON, wrap it as a dictionary string (FastAPI endpoint expects dict)
         alert_data = { raw_alert_text: alertText };
       }
 
-      // 3. Format timestamp to ISO 8601
       const formattedTimestamp = timestamp ? new Date(timestamp).toISOString() : null;
 
-      // 4. API Submit call
       const response = await submitIncident({
         alert_data,
         logs,
@@ -111,6 +172,21 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
         environment: environment.trim() || null,
         timestamp: formattedTimestamp,
       });
+
+      // Save to localStorage
+      try {
+        const list = JSON.parse(localStorage.getItem("recent_investigations") || "[]");
+        const newEntry = {
+          id: response.investigation_id,
+          serviceName: serviceName.trim() || "unknown-service",
+          environment: environment.trim() || "production",
+          timestamp: formattedTimestamp || new Date().toISOString()
+        };
+        const updated = [newEntry, ...list.filter((x: any) => x.id !== response.investigation_id)].slice(0, 6);
+        localStorage.setItem("recent_investigations", JSON.stringify(updated));
+      } catch (errStorage) {
+        console.error("Failed to update local history store:", errStorage);
+      }
 
       onSuccess(response.investigation_id);
     } catch (err: any) {
@@ -146,6 +222,30 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
         </div>
       )}
 
+      {/* Interactive Templates */}
+      <div className="space-y-3 pb-6 border-b border-slate-900/80">
+        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono flex items-center gap-1.5">
+          <span>⚡</span> Quick Load Incident Templates
+        </label>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {TEMPLATES.map((tpl, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => loadTemplate(tpl)}
+              className="px-4 py-3 text-left rounded-xl bg-slate-950/80 border border-slate-850 hover:border-cyan-500/40 hover:bg-slate-900/60 transition group flex flex-col justify-between h-full space-y-1.5"
+            >
+              <span className="text-xs font-bold text-slate-200 group-hover:text-cyan-400 transition font-mono leading-tight">
+                {tpl.name}
+              </span>
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider font-mono">
+                {tpl.service} • {tpl.env}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Alert Text Area */}
       <div className="space-y-2.5">
         <label className="flex items-center gap-2 text-sm font-bold text-slate-300">
@@ -159,7 +259,7 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
           placeholder='{"event": "HTTP_500", "path": "/checkout", "message": "Database timeout"}'
           className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition font-mono text-sm leading-relaxed"
         />
-        <div className="flex justify-between text-xs font-semibold text-slate-600">
+        <div className="flex justify-between text-xs font-semibold text-slate-650">
           <span>Make sure it's valid JSON for structured agent parsing</span>
           <span className={alertText.length > 9000 ? "text-amber-500" : ""}>
             {alertText.length.toLocaleString()} / 10,000 chars
@@ -249,7 +349,7 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-4 px-6 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:via-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-4 px-6 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:via-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm uppercase tracking-wider font-mono"
         >
           {loading ? (
             <>
@@ -258,7 +358,7 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
             </>
           ) : (
             <>
-              <Play className="w-4 h-4 text-white fill-current" />
+              <Play className="w-4 h-4 text-white fill-current animate-pulse" />
               <span>Launch Autonomous Triage</span>
             </>
           )}
