@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { getReport } from "../../lib/api";
+import { Download, Loader2 } from "lucide-react";
 
 interface ExportButtonProps {
   investigationId: string;
@@ -33,16 +34,17 @@ export function ExportButton({ investigationId }: ExportButtonProps) {
     <button
       onClick={handleExport}
       disabled={loading}
-      className="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-sm rounded-xl shadow-lg transition duration-200 disabled:opacity-50 flex items-center gap-2"
+      className="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs uppercase tracking-wider font-mono rounded-xl shadow-lg transition duration-200 disabled:opacity-50 flex items-center gap-2"
     >
       {loading ? (
         <>
-          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          <Loader2 className="w-4 h-4 animate-spin" />
           Exporting...
         </>
       ) : (
         <>
-          <span>📥</span> Export Markdown
+          <Download className="w-4 h-4" />
+          Export Markdown
         </>
       )}
     </button>
