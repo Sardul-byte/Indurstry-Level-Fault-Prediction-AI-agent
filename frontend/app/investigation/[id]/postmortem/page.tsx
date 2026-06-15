@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { getReport, getInvestigation } from "../../../lib/api";
-import { usePolling } from "../../../lib/polling";
-import { PostmortemSection } from "../../../components/postmortem/PostmortemSection";
-import { ExportButton } from "../../../components/postmortem/ExportButton";
+import { getReport, getInvestigation } from "../../../../lib/api";
+import { usePolling } from "../../../../lib/polling";
+import { PostmortemSection } from "../../../../components/postmortem/PostmortemSection";
+import { ExportButton } from "../../../../components/postmortem/ExportButton";
 
 interface PageProps {
   params: { id: string };

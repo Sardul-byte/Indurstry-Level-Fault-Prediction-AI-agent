@@ -2,9 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
-import { getInvestigation } from "../../../lib/api";
-import { usePolling } from "../../../lib/polling";
-import { HypothesisCard } from "../../../components/rca/HypothesisCard";
+import { getInvestigation } from "../../../../lib/api";
+import { usePolling } from "../../../../lib/polling";
+import { HypothesisCard } from "../../../../components/rca/HypothesisCard";
 
 interface PageProps {
   params: { id: string };

@@ -207,7 +207,7 @@ export default function InvestigationDashboardPage({ params }: PageProps) {
         {/* Injected retrieval evidence panel (Requirement 15.5) */}
         {retOut && (
           <div className="mt-8">
-            <RetrievedEvidencePanel retrievalContext={retOut} />
+            <RetrievedEvidencePanel retrievalContext={retOut as any} />
           </div>
         )}
 

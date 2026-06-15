@@ -2,9 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
-import { getRecommendations, getInvestigation } from "../../../lib/api";
-import { usePolling } from "../../../lib/polling";
-import { RemediationStepCard } from "../../../components/recommendations/RemediationStepCard";
+import { getRecommendations, getInvestigation } from "../../../../lib/api";
+import { usePolling } from "../../../../lib/polling";
+import { RemediationStepCard } from "../../../../components/recommendations/RemediationStepCard";
 
 interface PageProps {
   params: { id: string };
