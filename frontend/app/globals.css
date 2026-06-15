@@ -1,20 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    @apply bg-slate-950 text-slate-100 antialiased selection:bg-cyan-500/30 selection:text-cyan-200;
+  }
+  
+  code, pre {
+    font-family: 'JetBrains Mono', monospace;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #020617; /* slate-950 */
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b; /* slate-800 */
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #0ea5e9; /* cyan-500 */
+}
+
+/* Custom glowing effects */
+.glow-card-cyan {
+  box-shadow: 0 0 20px -5px rgba(6, 182, 212, 0.1);
+  transition: all 0.3s ease;
+}
+.glow-card-cyan:hover {
+  box-shadow: 0 0 25px -2px rgba(6, 182, 212, 0.25);
+  border-color: rgba(6, 182, 212, 0.4);
+}
+
+.glow-card-purple {
+  box-shadow: 0 0 20px -5px rgba(168, 85, 247, 0.1);
+  transition: all 0.3s ease;
+}
+.glow-card-purple:hover {
+  box-shadow: 0 0 25px -2px rgba(168, 85, 247, 0.25);
+  border-color: rgba(168, 85, 247, 0.4);
+}
+
+.glow-card-emerald {
+  box-shadow: 0 0 20px -5px rgba(16, 185, 129, 0.1);
+  transition: all 0.3s ease;
+}
+.glow-card-emerald:hover {
+  box-shadow: 0 0 25px -2px rgba(16, 185, 129, 0.25);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.glow-card-ruby {
+  box-shadow: 0 0 20px -5px rgba(239, 68, 68, 0.1);
+  transition: all 0.3s ease;
+}
+.glow-card-ruby:hover {
+  box-shadow: 0 0 25px -2px rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* Glassmorphism utility */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.65); /* slate-900 with opacity */
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(30, 41, 59, 0.7); /* slate-800 with opacity */
 }

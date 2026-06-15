@@ -1,6 +1,17 @@
 import React, { useState } from "react";
 import { submitIncident, ApiError } from "../../lib/api";
 import { FieldError } from "./FieldError";
+import { 
+  Terminal, 
+  FileCode2, 
+  Layers, 
+  Globe, 
+  Clock, 
+  AlertTriangle, 
+  Play, 
+  Loader2,
+  UploadCloud
+} from "lucide-react";
 
 interface IncidentFormProps {
   onSuccess: (investigationId: string) => void;
@@ -102,11 +113,9 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
       });
 
       onSuccess(response.investigation_id);
-    } catch (err) {
+    } catch (err: any) {
       if (err instanceof ApiError) {
         if (err.status === 422) {
-          // Display inline field validation errors (Requirement 14.3)
-          // Look inside validation error array if present
           const errorMsg = err.message;
           setGlobalError("Submission failed due to schema validation errors.");
           setErrors((prev) => ({
@@ -115,11 +124,10 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
             logFile: errorMsg.includes("logs") ? "Invalid log contents." : "",
           }));
         } else {
-          // General HTTP error banner (Requirement 14.4)
           setGlobalError(`Incident submission failed: ${err.message} (Request ID: ${err.request_id})`);
         }
       } else {
-        setGlobalError("Failed to submit incident. Please check your internet connection.");
+        setGlobalError(err?.message || "Failed to submit incident. Please check your internet connection.");
       }
     } finally {
       setLoading(false);
@@ -127,96 +135,135 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl transition duration-500 hover:shadow-cyan-950/20">
-      
+    <form 
+      onSubmit={handleSubmit} 
+      className="space-y-8 max-w-3xl mx-auto glass-panel rounded-2xl p-8 md:p-10 shadow-2xl transition duration-500 hover:shadow-cyan-950/10"
+    >
       {globalError && (
-        <div className="p-4 bg-red-950/30 border border-red-950/70 text-red-400 text-sm font-medium rounded-xl animate-shake">
-          {globalError}
+        <div className="p-4 bg-red-950/20 border border-red-900/50 text-red-400 text-sm font-semibold rounded-xl flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+          <span>{globalError}</span>
         </div>
       )}
 
       {/* Alert Text Area */}
-      <div>
-        <label className="block text-sm font-semibold text-slate-200 mb-2">
-          Alert Data (JSON or plain text, max 10,000 characters)
+      <div className="space-y-2.5">
+        <label className="flex items-center gap-2 text-sm font-bold text-slate-300">
+          <Terminal className="w-4 h-4 text-cyan-400" />
+          Alert Payload (JSON format recommended, max 10,000 characters)
         </label>
         <textarea
-          rows={5}
+          rows={6}
           value={alertText}
           onChange={(e) => setAlertText(e.target.value)}
-          placeholder="Paste Alert message or JSON payload here..."
-          className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
+          placeholder='{"event": "HTTP_500", "path": "/checkout", "message": "Database timeout"}'
+          className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition font-mono text-sm leading-relaxed"
         />
-        <div className="flex justify-between text-xs text-slate-500 mt-1">
-          <span>{alertText.length} / 10,000 characters</span>
+        <div className="flex justify-between text-xs font-semibold text-slate-600">
+          <span>Make sure it's valid JSON for structured agent parsing</span>
+          <span className={alertText.length > 9000 ? "text-amber-500" : ""}>
+            {alertText.length.toLocaleString()} / 10,000 chars
+          </span>
         </div>
         <FieldError message={errors.alertText} />
       </div>
 
       {/* Log File Upload */}
-      <div>
-        <label className="block text-sm font-semibold text-slate-200 mb-2">
-          Logs File (.txt or .json, max 10 MB)
+      <div className="space-y-2.5">
+        <label className="flex items-center gap-2 text-sm font-bold text-slate-300">
+          <FileCode2 className="w-4 h-4 text-cyan-400" />
+          System Server Logs (.txt or .json, max 10 MB)
         </label>
-        <input
-          type="file"
-          accept=".txt,.json"
-          onChange={handleFileChange}
-          className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyan-950 file:text-cyan-400 hover:file:bg-cyan-900 cursor-pointer"
-        />
+        
+        <div className="relative group border border-dashed border-slate-800 hover:border-cyan-500/40 rounded-xl bg-slate-950/50 hover:bg-slate-950/80 transition p-6 flex flex-col items-center justify-center text-center gap-2 cursor-pointer">
+          <input
+            type="file"
+            accept=".txt,.json"
+            onChange={handleFileChange}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          />
+          <UploadCloud className="w-10 h-10 text-slate-500 group-hover:text-cyan-400 transition" />
+          {logFile ? (
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-cyan-400 font-mono">{logFile.name}</p>
+              <p className="text-xs text-slate-500">{(logFile.size / 1024 / 1024).toFixed(2)} MB</p>
+            </div>
+          ) : (
+            <div>
+              <p className="text-sm font-semibold text-slate-300">
+                Click to browse files
+              </p>
+              <p className="text-xs text-slate-500 mt-1">
+                Drag and drop your server logs or runbook guides
+              </p>
+            </div>
+          )}
+        </div>
         <FieldError message={errors.logFile} />
       </div>
 
-      {/* Optional metadata fields */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div>
-          <label className="block text-sm font-semibold text-slate-200 mb-2">
-            Service Name (Optional)
+      {/* Metadata layout */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-900">
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <Layers className="w-3.5 h-3.5 text-cyan-500" />
+            Service Name
           </label>
           <input
             type="text"
             value={serviceName}
             onChange={(e) => setServiceName(e.target.value)}
             placeholder="payment-service"
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
+            className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition text-sm"
           />
         </div>
-        <div>
-          <label className="block text-sm font-semibold text-slate-200 mb-2">
-            Environment (Optional)
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <Globe className="w-3.5 h-3.5 text-cyan-500" />
+            Environment
           </label>
           <input
             type="text"
             value={environment}
             onChange={(e) => setEnvironment(e.target.value)}
             placeholder="production"
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
+            className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition text-sm"
           />
         </div>
-        <div>
-          <label className="block text-sm font-semibold text-slate-200 mb-2">
-            Timestamp (Optional)
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <Clock className="w-3.5 h-3.5 text-cyan-500" />
+            Timestamp
           </label>
           <input
             type="datetime-local"
             value={timestamp}
             onChange={(e) => setTimestamp(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
+            className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition text-sm"
           />
         </div>
       </div>
 
       {/* Submit button */}
-      <div>
+      <div className="pt-2">
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-4 px-6 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:via-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          {loading ? "Initializing Investigation..." : "Launch Incident Investigation"}
+          {loading ? (
+            <>
+              <Loader2 className="w-5 h-5 text-white animate-spin" />
+              <span>Launching Orchestration Pipeline...</span>
+            </>
+          ) : (
+            <>
+              <Play className="w-4 h-4 text-white fill-current" />
+              <span>Launch Autonomous Triage</span>
+            </>
+          )}
         </button>
       </div>
-
     </form>
   );
 }
