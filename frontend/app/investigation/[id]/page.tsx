@@ -7,6 +7,19 @@ import { getInvestigation } from "../../../lib/api";
 import { WorkflowStageBar } from "../../../components/dashboard/WorkflowStageBar";
 import { AgentStatusCard } from "../../../components/dashboard/AgentStatusCard";
 import { RetrievedEvidencePanel } from "../../../components/dashboard/RetrievedEvidencePanel";
+import { 
+  LayoutDashboard, 
+  Activity, 
+  ShieldCheck, 
+  FileText, 
+  Server, 
+  Globe, 
+  Clock, 
+  ArrowLeft,
+  RefreshCw,
+  AlertOctagon,
+  Fingerprint
+} from "lucide-react";
 
 interface PageProps {
   params: { id: string };
@@ -33,13 +46,17 @@ export default function InvestigationDashboardPage({ params }: PageProps) {
 
   if (error && !data) {
     return (
-      <main className="min-h-screen bg-slate-950 text-slate-100 p-8 flex flex-col justify-center items-center">
-        <div className="max-w-md w-full bg-red-950/20 border border-red-900 rounded-2xl p-6 text-center space-y-4">
-          <span className="text-3xl">⚠️</span>
-          <h1 className="text-xl font-bold text-red-400">Failed to Load Investigation</h1>
-          <p className="text-slate-400 text-sm">{error.message}</p>
-          <Link href="/submit" className="inline-block py-2.5 px-5 bg-slate-900 text-slate-300 rounded-xl hover:bg-slate-800 border border-slate-800 text-sm font-semibold transition">
-            Return to Submit
+      <main className="min-h-screen bg-slate-950 text-slate-100 p-8 flex flex-col justify-center items-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_30%_at_50%_0%,#ef44440a,#000_100%)] -z-10" />
+        <div className="max-w-md w-full bg-red-950/10 border border-red-900/40 rounded-2xl p-6 text-center space-y-4 shadow-2xl backdrop-blur">
+          <AlertOctagon className="w-12 h-12 text-red-500 mx-auto animate-pulse" />
+          <h1 className="text-xl font-bold text-red-400 font-mono">Failed to Load Investigation</h1>
+          <p className="text-slate-400 text-sm leading-relaxed">{error.message}</p>
+          <Link 
+            href="/submit" 
+            className="inline-flex items-center gap-2 py-2.5 px-5 bg-slate-900 text-slate-300 rounded-xl hover:bg-slate-800 border border-slate-800 text-xs font-bold transition"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Return to Submit
           </Link>
         </div>
       </main>
@@ -52,14 +69,10 @@ export default function InvestigationDashboardPage({ params }: PageProps) {
 
   // Helper to compute status for each agent card
   const getAgentStatus = (agentName: string) => {
-    // Check if output exists for this agent
     const out = agentOutputs.find((o) => o.agent_name === agentName);
     if (out) return "completed";
 
-    // If workflow failed at this agent stage
     if (status === "failed") {
-      // Find which agent failed (let's assume it failed if it's the current active stage)
-      // We can also check if error has this agent name
       const isFailedAgent = (stage === "triaging" && (agentName === "alert_agent" || agentName === "log_analysis_agent" || agentName === "retrieval_agent"))
         || (stage === "root_cause_analysis" && agentName === "rca_agent")
         || (stage === "remediation" && agentName === "remediation_agent")
@@ -67,10 +80,8 @@ export default function InvestigationDashboardPage({ params }: PageProps) {
       if (isFailedAgent) return "failed";
     }
 
-    // Determine running stage
     if (status === "running" || status === "pending") {
       if (stage === "triaging" && (agentName === "alert_agent" || agentName === "log_analysis_agent" || agentName === "retrieval_agent")) {
-        // Since triaging covers first three, we can mark them as running if previous is done
         const prevIndex = ALL_AGENTS.indexOf(agentName) - 1;
         if (prevIndex === -1 || agentOutputs.some((o) => o.agent_name === ALL_AGENTS[prevIndex])) {
           return "running";
@@ -92,80 +103,86 @@ export default function InvestigationDashboardPage({ params }: PageProps) {
   const pmOut = agentOutputs.find((o) => o.agent_name === "postmortem_agent")?.output;
 
   const isCompleted = status === "completed";
+  
+  // Extract metadata if available
+  const serviceName = alertOut?.impacted_services?.[0] || "detecting...";
+  const severity = alertOut?.severity || "detecting...";
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 pb-16 relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_30%_at_50%_0%,#0c4a6e15,#000_100%)] -z-10" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_30%_at_50%_0%,#0c4a6e12,#000_100%)] -z-10" />
 
       {/* Stale data warning indicator (Requirement 15.4) */}
       {isStale && (
-        <div className="w-full bg-amber-500/10 border-b border-amber-500/20 text-amber-400 text-xs py-2 px-4 text-center font-medium sticky top-0 z-50 backdrop-blur">
-          ⚠️ Connection lost. Serving stale cached data. Retrying...
+        <div className="w-full bg-amber-500/10 border-b border-amber-500/20 text-amber-400 text-[10px] md:text-xs py-2 px-4 text-center font-bold tracking-wider uppercase sticky top-0 z-50 backdrop-blur flex items-center justify-center gap-2 animate-pulse">
+          <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Connection lost. Serving cached local snapshot. Retrying...
         </div>
       )}
 
       {/* Header section */}
-      <header className="border-b border-slate-900 bg-slate-950/80 backdrop-blur sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="space-y-1">
+      <header className="border-b border-slate-900 bg-slate-950/70 backdrop-blur sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-5">
+          <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse" />
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest font-mono">
-                System Investigation
+              <span className={`w-2 h-2 rounded-full animate-pulse ${
+                status === "failed" ? "bg-red-500" : isCompleted ? "bg-emerald-500" : "bg-cyan-500"
+              }`} />
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono">
+                AI Agent Triage Console
               </span>
             </div>
-            <h1 className="text-xl md:text-2xl font-extrabold text-slate-200 font-mono">
-              Dashboard — {id.substring(0, 8)}...
+            <h1 className="text-lg md:text-xl font-extrabold text-slate-200 font-mono tracking-tight flex items-center gap-2">
+              Incident ID: <span className="text-cyan-400">{id.substring(0, 8)}</span>
             </h1>
           </div>
 
           {/* Navigation controls (Requirement 16.3, 16.4) */}
-          <nav className="flex gap-2">
+          <nav className="flex items-center gap-1.5 bg-slate-950 border border-slate-900 p-1.5 rounded-xl">
             <Link 
               href={`/investigation/${id}`}
-              className="px-4 py-2 text-xs font-bold rounded-xl bg-slate-900 border border-slate-800 text-cyan-400 cursor-default"
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg bg-cyan-950 border border-cyan-800 text-cyan-400"
             >
-              Dashboard
+              <LayoutDashboard className="w-3.5 h-3.5" /> Dashboard
             </Link>
             
             {isCompleted ? (
               <>
                 <Link 
                   href={`/investigation/${id}/root-cause`}
-                  className="px-4 py-2 text-xs font-bold rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-cyan-400 hover:border-slate-700 transition"
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg border border-transparent text-slate-400 hover:text-cyan-400 hover:bg-slate-900 transition"
                 >
-                  RCA Results
+                  <Activity className="w-3.5 h-3.5 text-slate-500 group-hover:text-cyan-400" /> RCA Results
                 </Link>
                 <Link 
                   href={`/investigation/${id}/recommendations`}
-                  className="px-4 py-2 text-xs font-bold rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-cyan-400 hover:border-slate-700 transition"
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg border border-transparent text-slate-400 hover:text-cyan-400 hover:bg-slate-900 transition"
                 >
-                  Recommendations
+                  <ShieldCheck className="w-3.5 h-3.5 text-slate-500 group-hover:text-cyan-400" /> Recommendations
                 </Link>
                 <Link 
                   href={`/investigation/${id}/postmortem`}
-                  className="px-4 py-2 text-xs font-bold rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-cyan-400 hover:border-slate-700 transition"
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg border border-transparent text-slate-400 hover:text-cyan-400 hover:bg-slate-900 transition"
                 >
-                  Postmortem report
+                  <FileText className="w-3.5 h-3.5 text-slate-500 group-hover:text-cyan-400" /> Postmortem Report
                 </Link>
               </>
             ) : (
               <>
                 <span 
                   title="Available once investigation completes"
-                  className="px-4 py-2 text-xs font-bold rounded-xl bg-slate-900/50 border border-slate-900/50 text-slate-600 cursor-not-allowed flex items-center gap-1.5"
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg text-slate-600 cursor-not-allowed"
                 >
-                  🔒 RCA Results
+                  🔒 RCA
                 </span>
                 <span 
                   title="Available once investigation completes"
-                  className="px-4 py-2 text-xs font-bold rounded-xl bg-slate-900/50 border border-slate-900/50 text-slate-600 cursor-not-allowed flex items-center gap-1.5"
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg text-slate-600 cursor-not-allowed"
                 >
                   🔒 Recommendations
                 </span>
                 <span 
                   title="Available once investigation completes"
-                  className="px-4 py-2 text-xs font-bold rounded-xl bg-slate-900/50 border border-slate-900/50 text-slate-600 cursor-not-allowed flex items-center gap-1.5"
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg text-slate-600 cursor-not-allowed"
                 >
                   🔒 Postmortem
                 </span>
@@ -178,16 +195,48 @@ export default function InvestigationDashboardPage({ params }: PageProps) {
       {/* Main container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
         
+        {/* Metadata Banner Card */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-900/40 border border-slate-900 p-5 rounded-2xl text-xs font-semibold">
+          <div className="flex items-center gap-3">
+            <Server className="w-4 h-4 text-cyan-400 shrink-0" />
+            <div>
+              <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider font-mono">Service Name</p>
+              <p className="text-slate-200 mt-0.5 truncate max-w-[150px]" title={serviceName}>{serviceName}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Globe className="w-4 h-4 text-cyan-400 shrink-0" />
+            <div>
+              <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider font-mono">Severity</p>
+              <p className="text-slate-200 mt-0.5 capitalize">{severity}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Clock className="w-4 h-4 text-cyan-400 shrink-0" />
+            <div>
+              <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider font-mono">Workflow Status</p>
+              <p className="text-slate-200 mt-0.5 capitalize">{status}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Fingerprint className="w-4 h-4 text-cyan-400 shrink-0" />
+            <div>
+              <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider font-mono">Request Trace</p>
+              <p className="text-slate-200 mt-0.5 font-mono text-[10px]">{data?.investigation_id?.substring(0, 18)}...</p>
+            </div>
+          </div>
+        </div>
+        
         {/* Progress Pipeline */}
         <WorkflowStageBar currentStage={stage} />
 
         {/* Dynamic status alert */}
         {status === "failed" && (
-          <div className="p-5 bg-red-500/10 border border-red-500/20 text-red-400 rounded-2xl flex items-start gap-4">
-            <span className="text-xl">🛑</span>
+          <div className="p-5 bg-red-950/20 border border-red-900/30 text-red-400 rounded-2xl flex items-start gap-4">
+            <AlertOctagon className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <h4 className="font-bold text-red-300">Investigation Pipeline Failed</h4>
-              <p className="text-xs text-red-400 leading-relaxed font-mono">
+              <h4 className="font-bold text-red-300 text-sm">Investigation Pipeline Aborted</h4>
+              <p className="text-xs text-slate-400 leading-relaxed font-mono">
                 Reason: {data?.agent_outputs?.find(o => o.output?.error)?.output?.error || "An unhandled exception occurred in the agent nodes."}
               </p>
             </div>
