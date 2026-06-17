@@ -213,18 +213,18 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
   return (
     <form 
       onSubmit={handleSubmit} 
-      className="space-y-8 max-w-3xl mx-auto glass-panel rounded-2xl p-8 md:p-10 shadow-2xl transition duration-500 hover:shadow-cyan-950/10"
+      className="space-y-8 max-w-3xl mx-auto bg-surface border border-border rounded-2xl p-8 md:p-10 shadow-sm transition duration-500 hover:shadow-md"
     >
       {globalError && (
-        <div className="p-4 bg-red-950/20 border border-red-900/50 text-red-400 text-sm font-semibold rounded-xl flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+        <div className="p-4 bg-danger/10 border border-danger/30 text-danger text-sm font-semibold rounded-xl flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-danger shrink-0 mt-0.5" />
           <span>{globalError}</span>
         </div>
       )}
 
       {/* Interactive Templates */}
-      <div className="space-y-3 pb-6 border-b border-slate-900/80">
-        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono flex items-center gap-1.5">
+      <div className="space-y-3 pb-6 border-b border-border">
+        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest font-mono flex items-center gap-1.5">
           <span>⚡</span> Quick Load Incident Templates
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -233,12 +233,12 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
               key={idx}
               type="button"
               onClick={() => loadTemplate(tpl)}
-              className="px-4 py-3 text-left rounded-xl bg-slate-950/80 border border-slate-850 hover:border-cyan-500/40 hover:bg-slate-900/60 transition group flex flex-col justify-between h-full space-y-1.5"
+              className="px-4 py-3 text-left rounded-xl bg-surface border border-border hover:border-primary/40 hover:bg-surface-raised transition group flex flex-col justify-between h-full space-y-1.5"
             >
-              <span className="text-xs font-bold text-slate-200 group-hover:text-cyan-400 transition font-mono leading-tight">
+              <span className="text-xs font-bold text-foreground group-hover:text-primary transition font-mono leading-tight">
                 {tpl.name}
               </span>
-              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider font-mono">
+              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider font-mono">
                 {tpl.service} • {tpl.env}
               </span>
             </button>
@@ -248,8 +248,8 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
 
       {/* Alert Text Area */}
       <div className="space-y-2.5">
-        <label className="flex items-center gap-2 text-sm font-bold text-slate-300">
-          <Terminal className="w-4 h-4 text-cyan-400" />
+        <label className="flex items-center gap-2 text-sm font-bold text-foreground">
+          <Terminal className="w-4 h-4 text-primary" />
           Alert Payload (JSON format recommended, max 10,000 characters)
         </label>
         <textarea
@@ -257,11 +257,11 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
           value={alertText}
           onChange={(e) => setAlertText(e.target.value)}
           placeholder='{"event": "HTTP_500", "path": "/checkout", "message": "Database timeout"}'
-          className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition font-mono text-sm leading-relaxed"
+          className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-foreground placeholder-subtle focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-transparent transition font-mono text-sm leading-relaxed"
         />
-        <div className="flex justify-between text-xs font-semibold text-slate-650">
+        <div className="flex justify-between text-xs font-semibold text-muted-foreground/80">
           <span>Make sure it's valid JSON for structured agent parsing</span>
-          <span className={alertText.length > 9000 ? "text-amber-500" : ""}>
+          <span className={alertText.length > 9000 ? "text-warning" : ""}>
             {alertText.length.toLocaleString()} / 10,000 chars
           </span>
         </div>
@@ -270,30 +270,30 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
 
       {/* Log File Upload */}
       <div className="space-y-2.5">
-        <label className="flex items-center gap-2 text-sm font-bold text-slate-300">
-          <FileCode2 className="w-4 h-4 text-cyan-400" />
+        <label className="flex items-center gap-2 text-sm font-bold text-foreground">
+          <FileCode2 className="w-4 h-4 text-primary" />
           System Server Logs (.txt or .json, max 10 MB)
         </label>
         
-        <div className="relative group border border-dashed border-slate-800 hover:border-cyan-500/40 rounded-xl bg-slate-950/50 hover:bg-slate-950/80 transition p-6 flex flex-col items-center justify-center text-center gap-2 cursor-pointer">
+        <div className="relative group border border-dashed border-border hover:border-primary/40 rounded-xl bg-surface/50 hover:bg-surface-raised transition p-6 flex flex-col items-center justify-center text-center gap-2 cursor-pointer">
           <input
             type="file"
             accept=".txt,.json"
             onChange={handleFileChange}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
-          <UploadCloud className="w-10 h-10 text-slate-500 group-hover:text-cyan-400 transition" />
+          <UploadCloud className="w-10 h-10 text-muted-foreground group-hover:text-primary transition" />
           {logFile ? (
             <div className="space-y-1">
-              <p className="text-sm font-semibold text-cyan-400 font-mono">{logFile.name}</p>
-              <p className="text-xs text-slate-500">{(logFile.size / 1024 / 1024).toFixed(2)} MB</p>
+              <p className="text-sm font-semibold text-primary font-mono">{logFile.name}</p>
+              <p className="text-xs text-muted-foreground">{(logFile.size / 1024 / 1024).toFixed(2)} MB</p>
             </div>
           ) : (
             <div>
-              <p className="text-sm font-semibold text-slate-300">
+              <p className="text-sm font-semibold text-foreground">
                 Click to browse files
               </p>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Drag and drop your server logs or runbook guides
               </p>
             </div>
@@ -303,10 +303,10 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
       </div>
 
       {/* Metadata layout */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-900">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-border">
         <div className="space-y-2">
-          <label className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
-            <Layers className="w-3.5 h-3.5 text-cyan-500" />
+          <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+            <Layers className="w-3.5 h-3.5 text-primary" />
             Service Name
           </label>
           <input
@@ -314,12 +314,12 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
             value={serviceName}
             onChange={(e) => setServiceName(e.target.value)}
             placeholder="payment-service"
-            className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition text-sm"
+            className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-foreground placeholder-subtle focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-transparent transition text-sm"
           />
         </div>
         <div className="space-y-2">
-          <label className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
-            <Globe className="w-3.5 h-3.5 text-cyan-500" />
+          <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+            <Globe className="w-3.5 h-3.5 text-primary" />
             Environment
           </label>
           <input
@@ -327,19 +327,19 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
             value={environment}
             onChange={(e) => setEnvironment(e.target.value)}
             placeholder="production"
-            className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition text-sm"
+            className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-foreground placeholder-subtle focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-transparent transition text-sm"
           />
         </div>
         <div className="space-y-2">
-          <label className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
-            <Clock className="w-3.5 h-3.5 text-cyan-500" />
+          <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+            <Clock className="w-3.5 h-3.5 text-primary" />
             Timestamp
           </label>
           <input
             type="datetime-local"
             value={timestamp}
             onChange={(e) => setTimestamp(e.target.value)}
-            className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition text-sm"
+            className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-transparent transition text-sm"
           />
         </div>
       </div>
@@ -349,7 +349,7 @@ export function IncidentForm({ onSuccess }: IncidentFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-4 px-6 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:via-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm uppercase tracking-wider font-mono"
+          className="w-full py-4 px-6 bg-primary hover:bg-primary/95 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm uppercase tracking-wider font-mono"
         >
           {loading ? (
             <>
