@@ -19,32 +19,32 @@ const AGENT_META: Record<string, { title: string; icon: any; color: string }> = 
   alert_agent: {
     title: "Alert Classifier",
     icon: BellRing,
-    color: "text-cyan-400 border-cyan-500/20 bg-cyan-950/20"
+    color: "text-primary border-primary-muted bg-primary-light"
   },
   log_analysis_agent: {
     title: "Log Analyzer",
     icon: Terminal,
-    color: "text-cyan-400 border-cyan-500/20 bg-cyan-950/20"
+    color: "text-primary border-primary-muted bg-primary-light"
   },
   retrieval_agent: {
     title: "RAG Evidence Finder",
     icon: Database,
-    color: "text-cyan-400 border-cyan-500/20 bg-cyan-950/20"
+    color: "text-primary border-primary-muted bg-primary-light"
   },
   rca_agent: {
     title: "Root Cause Engine",
     icon: BrainCircuit,
-    color: "text-purple-400 border-purple-500/20 bg-purple-950/20"
+    color: "text-purple-700 border-purple-300 bg-purple-50"
   },
   remediation_agent: {
     title: "Remediation Orchestrator",
     icon: ShieldAlert,
-    color: "text-purple-400 border-purple-500/20 bg-purple-950/20"
+    color: "text-purple-700 border-purple-300 bg-purple-50"
   },
   postmortem_agent: {
     title: "Postmortem Writer",
     icon: FileText,
-    color: "text-emerald-400 border-emerald-500/20 bg-emerald-950/20"
+    color: "text-success border-success/35 bg-success/10"
   },
 };
 
@@ -55,16 +55,16 @@ export function PostmortemSection({ heading, body, sourceAgent }: PostmortemSect
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" "),
     icon: UserCheck,
-    color: "text-slate-400 border-slate-800 bg-slate-900/60"
+    color: "text-muted-foreground border-border bg-surface-raised"
   };
 
   const IconComponent = meta.icon;
 
   return (
-    <div className="bg-slate-900/60 border border-slate-850 rounded-2xl p-6 shadow-xl space-y-4 hover:border-slate-800 transition duration-300">
+    <div className="bg-surface border border-border rounded-2xl p-6 shadow-sm space-y-4 hover:border-border-soft transition duration-300">
       {/* 2.3: Visually distinct heading (h2) and body text (Requirement 17.1) */}
-      <div className="flex justify-between items-center border-b border-slate-850/60 pb-3 flex-wrap gap-3">
-        <h2 className="text-base md:text-lg font-bold text-slate-100 font-mono tracking-tight">
+      <div className="flex justify-between items-center border-b border-border pb-3 flex-wrap gap-3">
+        <h2 className="text-base md:text-lg font-bold text-foreground font-mono tracking-tight">
           {heading}
         </h2>
         <span className={`px-2.5 py-1 rounded-lg border text-[10px] font-bold font-mono flex items-center gap-1.5 ${meta.color}`}>
@@ -73,7 +73,7 @@ export function PostmortemSection({ heading, body, sourceAgent }: PostmortemSect
         </span>
       </div>
       
-      <p className="text-xs text-slate-300 leading-relaxed font-mono whitespace-pre-wrap bg-slate-950/60 p-4.5 rounded-xl border border-slate-950">
+      <p className="text-xs text-foreground leading-relaxed font-mono whitespace-pre-wrap bg-surface-raised p-4.5 rounded-xl border border-border">
         {body}
       </p>
     </div>

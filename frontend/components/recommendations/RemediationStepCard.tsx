@@ -22,48 +22,48 @@ export function RemediationStepCard({ action, category, rationale, confidence, p
     switch (cat) {
       case "operational":
         return {
-          badge: "bg-cyan-500/10 border-cyan-500/30 text-cyan-400",
+          badge: "bg-primary-light border-primary-muted text-primary",
           icon: Cpu,
-          glow: "hover:border-cyan-500/20 hover:shadow-[0_0_15px_rgba(6,182,212,0.05)]",
+          glow: "hover:border-primary/30 hover:shadow-sm",
         };
       case "configuration":
         return {
-          badge: "bg-purple-500/10 border-purple-500/30 text-purple-400",
+          badge: "bg-purple-500/10 border-purple-500/35 text-purple-700",
           icon: Sliders,
-          glow: "hover:border-purple-500/20 hover:shadow-[0_0_15px_rgba(168,85,247,0.05)]",
+          glow: "hover:border-purple-500/30 hover:shadow-sm",
         };
       case "code_change":
         return {
-          badge: "bg-amber-500/10 border-amber-500/30 text-amber-400",
+          badge: "bg-warning/10 border-warning/35 text-warning",
           icon: GitBranch,
-          glow: "hover:border-amber-500/20 hover:shadow-[0_0_15px_rgba(245,158,11,0.05)]",
+          glow: "hover:border-warning/30 hover:shadow-sm",
         };
       default:
         return {
-          badge: "bg-slate-500/10 border-slate-500/30 text-slate-400",
+          badge: "bg-surface-raised border border-border text-muted-foreground",
           icon: Wrench,
-          glow: "hover:border-slate-800",
+          glow: "hover:border-border-soft",
         };
     }
   };
 
   const getConfidenceColor = (conf: string) => {
     if (conf === "supported") {
-      return "bg-emerald-500/10 border-emerald-500/30 text-emerald-400";
+      return "bg-success/10 border-success/35 text-success";
     }
-    return "bg-slate-500/10 border-slate-500/25 text-slate-400";
+    return "bg-surface-raised border border-border text-muted-foreground";
   };
 
   const details = getCategoryDetails(category);
   const IconComponent = details.icon;
 
   return (
-    <div className={`p-6 border rounded-2xl bg-slate-900/60 shadow-xl transition-all duration-350 flex flex-col gap-4 ${details.glow} ${
-      confidence === "supported" ? "border-slate-800/80" : "border-slate-850/60"
+    <div className={`p-6 border rounded-2xl bg-surface shadow-sm transition-all duration-350 flex flex-col gap-4 ${details.glow} ${
+      confidence === "supported" ? "border-border" : "border-border/60"
     }`}>
       <div className="flex justify-between items-start flex-wrap gap-4">
         <div className="flex items-start gap-4 flex-1">
-          <span className="w-8 h-8 rounded-xl bg-slate-950 border border-slate-850 text-slate-400 font-mono font-bold text-xs flex items-center justify-center shrink-0">
+          <span className="w-8 h-8 rounded-xl bg-surface-raised border border-border text-muted-foreground font-mono font-bold text-xs flex items-center justify-center shrink-0">
             {priority}
           </span>
           <div className="space-y-2 flex-1">
@@ -77,7 +77,7 @@ export function RemediationStepCard({ action, category, rationale, confidence, p
               </span>
             </div>
             
-            <h3 className="font-bold text-slate-200 text-sm md:text-base leading-relaxed">
+            <h3 className="font-bold text-foreground text-sm md:text-base leading-relaxed">
               {action}
             </h3>
           </div>
@@ -85,18 +85,18 @@ export function RemediationStepCard({ action, category, rationale, confidence, p
 
         <button 
           onClick={() => setIsOpen(!isOpen)}
-          className="w-8 h-8 rounded-lg bg-slate-950 border border-slate-850 hover:border-slate-700 text-slate-400 hover:text-slate-200 transition flex items-center justify-center shrink-0"
+          className="w-8 h-8 rounded-lg bg-surface border border-border hover:border-border-soft text-muted-foreground hover:text-foreground transition flex items-center justify-center shrink-0"
         >
           {isOpen ? <ChevronUp className="w-4.5 h-4.5" /> : <ChevronDown className="w-4.5 h-4.5" />}
         </button>
       </div>
 
       {isOpen && (
-        <div className="border-t border-slate-850/60 pt-4 animate-fade-in">
-          <div className="flex items-start gap-2.5 bg-slate-950/60 p-3.5 rounded-xl border border-slate-950">
-            <CheckCircle className="w-4 h-4 text-cyan-500 shrink-0 mt-0.5" />
-            <p className="text-xs text-slate-450 leading-relaxed italic">
-              <span className="font-bold text-slate-350 not-italic uppercase tracking-widest text-[9px] font-mono mr-1.5">Rationale:</span>
+        <div className="border-t border-border pt-4 animate-fade-in">
+          <div className="flex items-start gap-2.5 bg-surface-raised p-3.5 rounded-xl border border-border">
+            <CheckCircle className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+            <p className="text-xs text-foreground leading-relaxed italic">
+              <span className="font-bold text-muted-foreground not-italic uppercase tracking-widest text-[9px] font-mono mr-1.5">Rationale:</span>
               {rationale}
             </p>
           </div>

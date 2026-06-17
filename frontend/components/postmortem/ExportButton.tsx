@@ -34,7 +34,7 @@ export function ExportButton({ investigationId }: ExportButtonProps) {
     <button
       onClick={handleExport}
       disabled={loading}
-      className="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs uppercase tracking-wider font-mono rounded-xl shadow-lg transition duration-200 disabled:opacity-50 flex items-center gap-2"
+      className="px-5 py-2.5 bg-primary hover:bg-primary/95 text-white font-bold text-xs uppercase tracking-wider font-mono rounded-xl shadow-sm hover:shadow-md transition duration-200 disabled:opacity-50 flex items-center gap-2"
     >
       {loading ? (
         <>

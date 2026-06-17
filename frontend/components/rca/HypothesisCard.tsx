@@ -17,47 +17,47 @@ export function HypothesisCard({ hypothesis, confidenceScore, evidence, rank }: 
   const getColors = (score: number) => {
     if (score >= 0.7) {
       return {
-        badge: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
-        bar: "bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_10px_rgba(16,185,129,0.3)]",
-        glow: "hover:border-emerald-500/30 hover:shadow-[0_0_20px_rgba(16,185,129,0.05)]",
+        badge: "bg-success/10 border-success/35 text-success",
+        bar: "bg-success",
+        glow: "hover:border-success/30 hover:shadow-sm",
       };
     }
     if (score >= 0.4) {
       return {
-        badge: "bg-blue-500/10 border-blue-500/30 text-blue-400",
-        bar: "bg-gradient-to-r from-blue-500 to-cyan-400 shadow-[0_0_10px_rgba(59,130,246,0.3)]",
-        glow: "hover:border-blue-500/30 hover:shadow-[0_0_20px_rgba(59,130,246,0.05)]",
+        badge: "bg-blue-500/10 border-blue-500/35 text-blue-650",
+        bar: "bg-blue-600",
+        glow: "hover:border-blue-500/30 hover:shadow-sm",
       };
     }
     return {
-      badge: "bg-amber-500/10 border-amber-500/30 text-amber-400",
-      bar: "bg-gradient-to-r from-amber-500 to-orange-400 shadow-[0_0_10px_rgba(245,158,11,0.3)]",
-      glow: "hover:border-amber-500/30 hover:shadow-[0_0_20px_rgba(245,158,11,0.05)]",
+      badge: "bg-warning/10 border-warning/35 text-warning",
+      bar: "bg-warning",
+      glow: "hover:border-warning/30 hover:shadow-sm",
     };
   };
 
   const colors = getColors(confidenceScore);
 
   return (
-    <div className={`glass-panel p-6 shadow-xl transition-all duration-350 rounded-2xl border border-slate-800/80 ${colors.glow} space-y-4`}>
+    <div className={`bg-surface border border-border p-6 shadow-sm transition-all duration-350 rounded-2xl ${colors.glow} space-y-4`}>
       <div className="flex justify-between items-start flex-wrap gap-4">
         <div className="flex items-start gap-4 flex-1">
-          <span className="w-8 h-8 rounded-xl bg-slate-950 flex items-center justify-center font-mono font-bold text-xs text-slate-400 border border-slate-850 shrink-0">
+          <span className="w-8 h-8 rounded-xl bg-surface-raised border border-border flex items-center justify-center font-mono font-bold text-xs text-muted-foreground shrink-0">
             #{rank}
           </span>
           <div className="space-y-2 flex-1">
-            <h3 className="font-bold text-slate-200 text-sm md:text-base leading-relaxed flex items-center gap-2">
-              <BrainCircuit className="w-4.5 h-4.5 text-cyan-400 shrink-0" />
+            <h3 className="font-bold text-foreground text-sm md:text-base leading-relaxed flex items-center gap-2">
+              <BrainCircuit className="w-4.5 h-4.5 text-primary shrink-0" />
               {hypothesis}
             </h3>
             
             {/* Custom Interactive Confidence Progress Bar */}
             <div className="space-y-1.5 pt-1 max-w-md">
-              <div className="flex justify-between items-center text-[10px] font-mono text-slate-500 font-bold uppercase tracking-wider">
+              <div className="flex justify-between items-center text-[10px] font-mono text-muted-foreground font-bold uppercase tracking-wider">
                 <span>Confidence Score</span>
-                <span className="text-slate-400 font-bold">{percentage}%</span>
+                <span className="text-foreground font-bold">{percentage}%</span>
               </div>
-              <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-850/80">
+              <div className="w-full bg-surface-raised h-2 rounded-full overflow-hidden border border-border">
                 <div 
                   className={`h-full rounded-full transition-all duration-1000 ${colors.bar}`}
                   style={{ width: `${percentage}%` }}
@@ -75,19 +75,19 @@ export function HypothesisCard({ hypothesis, confidenceScore, evidence, rank }: 
           
           <button 
             onClick={() => setIsOpen(!isOpen)}
-            className="w-8 h-8 rounded-lg bg-slate-900/60 border border-slate-850 hover:border-slate-700 text-slate-400 hover:text-slate-200 transition flex items-center justify-center shrink-0"
+            className="w-8 h-8 rounded-lg bg-surface border border-border hover:border-border-soft text-muted-foreground hover:text-foreground transition flex items-center justify-center shrink-0"
             title={isOpen ? "Collapse evidence" : "Expand evidence"}
           >
-            {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            {isOpen ? <ChevronUp className="w-4.5 h-4.5" /> : <ChevronDown className="w-4.5 h-4.5" />}
           </button>
         </div>
       </div>
       
       {isOpen && (
-        <div className="border-t border-slate-850/60 pt-4 animate-fade-in">
+        <div className="border-t border-border pt-4 animate-fade-in">
           <div className="flex items-center gap-1.5 mb-3">
-            <Activity className="w-3.5 h-3.5 text-slate-500" />
-            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">
+            <Activity className="w-3.5 h-3.5 text-muted-foreground" />
+            <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest font-mono">
               Supporting Evidence
             </h4>
           </div>
