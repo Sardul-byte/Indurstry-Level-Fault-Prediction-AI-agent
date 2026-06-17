@@ -110,25 +110,25 @@ export function AgentStatusCard({ agentName, status, output }: AgentStatusCardPr
         return {
           icon: CheckCircle2,
           text: "completed",
-          badgeClass: "bg-emerald-950/40 border-emerald-900/50 text-emerald-400",
+          badgeClass: "bg-success/10 border-success/35 text-success",
         };
       case "running":
         return {
           icon: Loader2,
           text: "running",
-          badgeClass: "bg-cyan-950/40 border-cyan-900/50 text-cyan-400 animate-pulse",
+          badgeClass: "bg-primary-light border-primary-muted text-primary animate-pulse",
         };
       case "failed":
         return {
           icon: XCircle,
           text: "failed",
-          badgeClass: "bg-red-950/40 border-red-900/50 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.1)]",
+          badgeClass: "bg-danger/10 border-danger/35 text-danger",
         };
       default:
         return {
           icon: Clock,
           text: "pending",
-          badgeClass: "bg-slate-900/40 border-slate-800/80 text-slate-500",
+          badgeClass: "bg-surface-raised border-border text-muted-foreground",
         };
     }
   };
@@ -138,28 +138,28 @@ export function AgentStatusCard({ agentName, status, output }: AgentStatusCardPr
   const rawText = formatOutputText(output);
   const truncatedText = rawText.length > 500 ? rawText.substring(0, 497) + "..." : rawText;
 
-  // Assign card-glow based on status
-  let glowClass = "border-slate-800 bg-slate-900/50 hover:border-slate-700";
+  // Assign card styles based on status
+  let glowClass = "border-border bg-surface hover:border-border-soft shadow-sm";
   if (status === "failed") {
-    glowClass = "border-red-900/40 bg-slate-900/50 glow-card-ruby";
+    glowClass = "border-danger/35 bg-surface shadow-sm";
   } else if (status === "running") {
-    glowClass = "border-cyan-900/40 bg-slate-900/60 shadow-[0_0_15px_rgba(6,182,212,0.05)]";
+    glowClass = "border-primary/35 bg-surface shadow-sm";
   } else if (status === "completed") {
-    glowClass = `border-slate-850 bg-slate-900/50 ${meta.glowClass}`;
+    glowClass = "border-border bg-surface shadow-sm";
   }
 
   return (
-    <div className={`p-6 border rounded-2xl backdrop-blur transition duration-300 ${glowClass}`}>
+    <div className={`p-6 border rounded-2xl transition duration-300 ${glowClass}`}>
       <div className="flex justify-between items-start gap-4 mb-4">
         <div className="flex gap-3">
           <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${
-            status === "completed" ? "bg-cyan-950/20 border-cyan-900/30 text-cyan-400" : "bg-slate-950/80 border-slate-800 text-slate-500"
+            status === "completed" ? "bg-primary-light border-primary-muted text-primary" : "bg-surface-raised border-border text-muted-foreground"
           }`}>
             <IconComponent className="w-4.5 h-4.5" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-200 text-sm">{meta.title}</h3>
-            <p className="text-[10px] text-slate-500 font-semibold">{meta.desc}</p>
+            <h3 className="font-bold text-foreground text-sm">{meta.title}</h3>
+            <p className="text-[10px] text-muted-foreground font-semibold">{meta.desc}</p>
           </div>
         </div>
 
@@ -171,7 +171,7 @@ export function AgentStatusCard({ agentName, status, output }: AgentStatusCardPr
 
       <div 
         data-testid="output-summary" 
-        className="text-xs text-slate-400 font-mono whitespace-pre-line leading-relaxed bg-slate-950/80 rounded-xl p-4 border border-slate-950 overflow-hidden min-h-[90px]"
+        className="text-xs text-foreground font-mono whitespace-pre-line leading-relaxed bg-surface-raised rounded-xl p-4 border border-border overflow-hidden min-h-[90px]"
       >
         {truncatedText}
       </div>
