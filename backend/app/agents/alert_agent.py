@@ -61,6 +61,16 @@ class AlertAgent(AgentBase):
             }
 
     async def _run_logic(self, alert_payload: dict[str, Any]) -> dict[str, Any]:
+        # Sanitize alert payload to remove secrets/PII
+        import json
+        from app.core.security import sanitize_logs
+        try:
+            serialized = json.dumps(alert_payload)
+            sanitized_serialized = sanitize_logs(serialized)
+            alert_payload = json.loads(sanitized_serialized)
+        except Exception:
+            pass
+
         llm = LLMProvider.get()
         
         system_instruction = (

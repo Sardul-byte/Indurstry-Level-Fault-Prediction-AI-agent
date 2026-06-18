@@ -59,6 +59,10 @@ class LogAnalysisAgent(AgentBase):
                 )
             }
 
+        # Mask PII and credentials in logs before processing
+        from app.core.security import sanitize_logs
+        log_data = sanitize_logs(log_data)
+
         try:
             # 1. Parse JSON/NDJSON if applicable, or fallback to line list
             lines = self._prepare_lines(log_data)
