@@ -183,6 +183,15 @@ def create_app() -> FastAPI:
     # Size limit must run *before* request-id binding so the 413 response still
     # carries a request_id header.  Adding RequestIDMiddleware first means it
     # wraps the size-limit middleware, so IDs are always available.
+    from fastapi.middleware.cors import CORSMiddleware
+
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     application.add_middleware(RequestIDMiddleware)
     application.add_middleware(RequestSizeLimitMiddleware)
 

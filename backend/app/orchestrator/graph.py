@@ -77,7 +77,7 @@ async def execute_agent_node(
                     db_output = AgentOutput(
                         investigation_id=inv_id,
                         agent_name=agent_name,
-                        output=validated_obj.model_dump(),
+                        output=validated_obj.model_dump(mode="json"),
                     )
                     session.add(db_output)
 
@@ -98,7 +98,7 @@ async def execute_agent_node(
                             # Create the Postmortem entry
                             db_pm = Postmortem(
                                 id=inv_id,
-                                sections=validated_obj.model_dump().get("sections", []),
+                                sections=validated_obj.model_dump(mode="json").get("sections", []),
                                 status=PostmortemStatus.ready,
                             )
                             session.add(db_pm)
