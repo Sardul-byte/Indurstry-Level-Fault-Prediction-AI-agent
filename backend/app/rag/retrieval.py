@@ -118,24 +118,31 @@ async def retrieve(
     effective_k: int = k if k is not None else settings.RAG_K
     logger.info("retrieval_start", query_preview=query[:120], k=effective_k)
 
-    # ── 2. Embed query (CPU-bound → thread pool) ───────────────────────────
-    loop = asyncio.get_running_loop()
-    query_vector: list[float] = await loop.run_in_executor(
-        None, partial(_embed_query, query)
-    )
+    try:
+        # ── 2. Embed query (CPU-bound → thread pool) ───────────────────────────
+        loop = asyncio.get_running_loop()
+        query_vector: list[float] = await loop.run_in_executor(
+            None, partial(_embed_query, query)
+        )
 
-    # ── 3. Qdrant nearest-neighbour search ────────────────────────────────
-    qdrant = get_qdrant_client()
-    search_results = await loop.run_in_executor(
-        None,
-        partial(
-            qdrant.search,
-            collection_name=settings.QDRANT_COLLECTION,
-            query_vector=query_vector,
-            limit=effective_k,
-            with_payload=True,
-        ),
-    )
+        # ── 3. Qdrant nearest-neighbour search ────────────────────────────────
+        qdrant = get_qdrant_client()
+        search_results = await loop.run_in_executor(
+            None,
+            partial(
+                qdrant.search,
+                collection_name=settings.QDRANT_COLLECTION,
+                query_vector=query_vector,
+                limit=effective_k,
+                with_payload=True,
+            ),
+        )
+    except Exception as exc:
+        logger.warning(
+            "retrieval_qdrant_error_falling_back",
+            error=str(exc),
+        )
+        return RetrievalContext(excerpts=[], retrieval_status="no_relevant_context")
 
     logger.info("qdrant_results", total=len(search_results))
 

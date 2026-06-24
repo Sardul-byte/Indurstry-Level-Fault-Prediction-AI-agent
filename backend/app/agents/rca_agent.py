@@ -72,46 +72,54 @@ class RCAAgent(AgentBase):
         log_summary: Any,
         retrieval_context: Any,
     ) -> dict[str, Any]:
-        llm = LLMProvider.get()
-
-        # Format retrieval context excerpts
-        context_excerpts = []
-        if retrieval_context:
-            excerpts = getattr(retrieval_context, "excerpts", []) or retrieval_context.get("excerpts", [])
-            for exc in excerpts:
-                doc_name = getattr(exc, "document_name", "") or exc.get("document_name", "")
-                section = getattr(exc, "section", "") or exc.get("section", "")
-                content = getattr(exc, "content", "") or exc.get("content", "")
-                context_excerpts.append(
-                    f"- Runbook: {doc_name} (Section: {section})\n  Content: {content}"
-                )
-
-        context_str = "\n".join(context_excerpts) if context_excerpts else "No relevant context found."
-
-        system_instruction = (
-            "You are an SRE Root Cause Analysis (RCA) expert. Analyze the given alert summary, log summary, "
-            "and retrieved runbook context. Generate a ranked list of up to 5 root cause hypotheses. "
-            "Each hypothesis must contain:\n"
-            "- hypothesis: description of the proposed root cause\n"
-            "- confidence_score: float value in range [0.0, 1.0]\n"
-            "- evidence: list of alert fields, log lines, or document sections supporting this (min 1 item)\n\n"
-            "Rules:\n"
-            "1. Sort hypotheses by confidence_score descending.\n"
-            "2. If no hypothesis has a confidence_score >= 0.2, set analysis_status to 'low_confidence' but still include the highest scoring hypothesis.\n"
-            "3. If hypotheses are found, set analysis_status to 'ok'.\n"
-        )
-
-        # Build prompt using JSON dumps if inputs are models
-        alert_json = alert_summary.model_dump_json() if hasattr(alert_summary, "model_dump_json") else str(alert_summary)
-        log_json = log_summary.model_dump_json() if hasattr(log_summary, "model_dump_json") else str(log_summary)
-
-        user_prompt = (
-            f"Alert Summary:\n{alert_json}\n\n"
-            f"Log Summary:\n{log_json}\n\n"
-            f"Retrieved Runbook Excerpts:\n{context_str}"
-        )
-
         try:
+            # Format retrieval context excerpts
+            context_excerpts = []
+            if retrieval_context:
+                if isinstance(retrieval_context, dict):
+                    excerpts = retrieval_context.get("excerpts") or []
+                else:
+                    excerpts = getattr(retrieval_context, "excerpts", []) or []
+
+                for exc in excerpts:
+                    if isinstance(exc, dict):
+                        doc_name = exc.get("document_name") or ""
+                        section = exc.get("section") or ""
+                        content = exc.get("content") or ""
+                    else:
+                        doc_name = getattr(exc, "document_name", "") or ""
+                        section = getattr(exc, "section", "") or ""
+                        content = getattr(exc, "content", "") or ""
+                    context_excerpts.append(
+                        f"- Runbook: {doc_name} (Section: {section})\n  Content: {content}"
+                    )
+
+            context_str = "\n".join(context_excerpts) if context_excerpts else "No relevant context found."
+
+            system_instruction = (
+                "You are an SRE Root Cause Analysis (RCA) expert. Analyze the given alert summary, log summary, "
+                "and retrieved runbook context. Generate a ranked list of up to 5 root cause hypotheses. "
+                "Each hypothesis must contain:\n"
+                "- hypothesis: description of the proposed root cause\n"
+                "- confidence_score: float value in range [0.0, 1.0]\n"
+                "- evidence: list of alert fields, log lines, or document sections supporting this (min 1 item)\n\n"
+                "Rules:\n"
+                "1. Sort hypotheses by confidence_score descending.\n"
+                "2. If no hypothesis has a confidence_score >= 0.2, set analysis_status to 'low_confidence' but still include the highest scoring hypothesis.\n"
+                "3. If hypotheses are found, set analysis_status to 'ok'.\n"
+            )
+
+            # Build prompt using JSON dumps if inputs are models
+            alert_json = alert_summary.model_dump_json() if hasattr(alert_summary, "model_dump_json") else str(alert_summary)
+            log_json = log_summary.model_dump_json() if hasattr(log_summary, "model_dump_json") else str(log_summary)
+
+            user_prompt = (
+                f"Alert Summary:\n{alert_json}\n\n"
+                f"Log Summary:\n{log_json}\n\n"
+                f"Retrieved Runbook Excerpts:\n{context_str}"
+            )
+
+            llm = LLMProvider.get()
             structured_llm = llm.with_structured_output(RCAResult)
             result = await structured_llm.ainvoke(
                 f"{system_instruction}\n\n{user_prompt}"

@@ -199,7 +199,7 @@ async def get_investigation_status(
 
     return InvestigationStatusResponse(
         investigation_id=investigation.id,
-        status=investigation.status.value,
-        stage=investigation.stage.value,
+        status=str(investigation.status.value) if hasattr(investigation.status, "value") else str(investigation.status),
+        stage=str(investigation.stage.value) if hasattr(investigation.stage, "value") else str(investigation.stage),
         agent_outputs=output_summaries,
     )

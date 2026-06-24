@@ -31,14 +31,14 @@ async def execute_agent_node(
     agent_instance: Any,
     state: InvestigationState,
     db_stage_after: str,
-) -> dict[str, Any]:
+) -> dict[str, Any] | None:
     """Helper function to execute an agent logic, validate its schema, and persist it to the DB."""
     agent_name = agent_instance.agent_name
     inv_id = state.get("investigation_id", "")
 
     # If the state already has an error, skip execution
     if state.get("error"):
-        return {}
+        return None
 
     logger.info("agent_node_start", agent=agent_name, investigation_id=inv_id)
 
@@ -212,12 +212,12 @@ async def node_postmortem_agent(state: InvestigationState) -> dict[str, Any]:
     return await execute_agent_node(PostmortemAgent(), state, "closed")
 
 
-async def node_error_handler(state: InvestigationState) -> dict[str, Any]:
+async def node_error_handler(state: InvestigationState) -> dict[str, Any] | None:
     """Node executed when an error occurred in the pipeline."""
     # The failing node has already set status=failed in the database.
     # This node just logs it and terminates the LangGraph execution.
     logger.error("orchestrator_error_handler_triggered", error=state.get("error"))
-    return {}
+    return None
 
 
 # ── Routing functions ────────────────────────────────────────────────────────

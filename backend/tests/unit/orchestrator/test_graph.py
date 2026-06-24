@@ -87,7 +87,7 @@ async def test_execute_agent_node_skips_on_error():
         "error": {"agent_name": "prev_agent", "message": "Failed"},
     }
     res = await execute_agent_node(mock_agent, state, "root_cause_analysis")
-    assert res == {}
+    assert res is None
     mock_agent.run.assert_not_called()
 
 
