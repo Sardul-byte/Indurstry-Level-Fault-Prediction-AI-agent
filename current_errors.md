@@ -28,23 +28,11 @@ google.auth.exceptions.DefaultCredentialsError: Your default credentials were no
 
 ---
 
-## 2. Qdrant Vector Database Connection Refused
+## 2. Qdrant Vector Database Connection Refused (RESOLVED)
 
-### Error / Warning Message
-```text
-2026-06-24T19:38:17.326571Z [warning  ] retrieval_qdrant_error_falling_back error=[WinError 10061] No connection could be made because the target machine actively refused it
-```
-
-### Impact
-* **Retrieval Agent (RAG):** The retrieval stage cannot connect to the vector store (`localhost:6333`) to fetch matching SRE runbooks or historical logs. 
-* **Fallback Status:** The agent handles this gracefully by returning an empty list of excerpts with status `no_relevant_context`, allowing the pipeline to proceed without crashing.
-
-### How to Fix
-1. Start the Docker Desktop application on your host.
-2. Start the Qdrant container using docker-compose:
-   ```bash
-   docker-compose up -d qdrant
-   ```
+### Status
+* **Fixed:** The Qdrant connection refused error has been resolved by configuring settings to automatically run Qdrant in `:memory:` mode when Docker is not installed/running locally.
+* **Result:** Collection creation, document ingestion, and document retrieval now run successfully in memory without requiring Docker or any external server!
 
 ---
 
