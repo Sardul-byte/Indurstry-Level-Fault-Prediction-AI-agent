@@ -65,7 +65,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         from qdrant_client import AsyncQdrantClient
         from qdrant_client.models import Distance, VectorParams
 
-        qdrant = AsyncQdrantClient(url=settings.QDRANT_URL)
+        if settings.QDRANT_URL == ":memory:":
+            qdrant = AsyncQdrantClient(location=":memory:")
+        else:
+            qdrant = AsyncQdrantClient(url=settings.QDRANT_URL)
         existing = await qdrant.get_collections()
         existing_names = {c.name for c in existing.collections}
 

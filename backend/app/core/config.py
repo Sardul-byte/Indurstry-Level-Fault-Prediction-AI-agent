@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str = ""
 
     # ── Vector store ──────────────────────────────────────────────────────────
-    QDRANT_URL: str = "http://localhost:6333"
+    QDRANT_URL: str = ":memory:"
     QDRANT_COLLECTION: str = "knowledge_base"
 
     # ── Database ──────────────────────────────────────────────────────────────

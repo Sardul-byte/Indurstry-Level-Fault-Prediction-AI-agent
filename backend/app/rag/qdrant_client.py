@@ -25,8 +25,22 @@ def get_qdrant_client():
     — keeping everything in the same thread keeps connection semantics simple.
     """
     from qdrant_client import QdrantClient  # noqa: PLC0415
+    from qdrant_client.models import Distance, VectorParams  # noqa: PLC0415
 
-    logger.info("connecting_qdrant", url=settings.QDRANT_URL)
-    client = QdrantClient(url=settings.QDRANT_URL)
-    logger.info("qdrant_connected", url=settings.QDRANT_URL)
+    if settings.QDRANT_URL == ":memory:":
+        logger.info("connecting_qdrant_in_memory")
+        client = QdrantClient(location=":memory:")
+        existing = client.get_collections()
+        existing_names = {c.name for c in existing.collections}
+        if settings.QDRANT_COLLECTION not in existing_names:
+            client.create_collection(
+                collection_name=settings.QDRANT_COLLECTION,
+                vectors_config=VectorParams(size=384, distance=Distance.COSINE),
+            )
+            logger.info("qdrant_in_memory_collection_created", collection=settings.QDRANT_COLLECTION)
+        logger.info("qdrant_connected_in_memory")
+    else:
+        logger.info("connecting_qdrant", url=settings.QDRANT_URL)
+        client = QdrantClient(url=settings.QDRANT_URL)
+        logger.info("qdrant_connected", url=settings.QDRANT_URL)
     return client
