@@ -10,6 +10,7 @@ from typing import Any
 from langgraph.graph import END, StateGraph
 from sqlalchemy import select
 
+from app.core.config import settings
 from app.agents.alert_agent import AlertAgent
 from app.agents.log_analysis_agent import LogAnalysisAgent
 from app.agents.postmortem_agent import PostmortemAgent
@@ -40,6 +41,20 @@ async def execute_agent_node(
         return {}
 
     logger.info("agent_node_start", agent=agent_name, investigation_id=inv_id)
+
+    run_tree = None
+    if settings.LANGCHAIN_TRACING_V2 == "true":
+        try:
+            from langsmith import RunTree
+            run_tree = RunTree(
+                name=f"agent_{agent_name}",
+                run_type="chain",
+                inputs={k: v for k, v in state.items() if k not in ("log_data", "alert_payload")},
+                project_name=settings.LANGCHAIN_PROJECT,
+            )
+            run_tree.post()
+        except Exception as e:
+            logger.warning("langsmith_run_tree_init_failed", error=str(e))
 
     try:
         # Run agent logic (which already wraps itself in appropriate timeouts)
@@ -88,10 +103,22 @@ async def execute_agent_node(
                             )
                             session.add(db_pm)
 
+            if run_tree:
+                try:
+                    run_tree.end(outputs=output_dict)
+                    run_tree.post()
+                except Exception:
+                    pass
             logger.info("agent_node_success", agent=agent_name, investigation_id=inv_id)
             return output_dict
 
         except Exception as db_exc:
+            if run_tree:
+                try:
+                    run_tree.end(error=str(db_exc))
+                    run_tree.post()
+                except Exception:
+                    pass
             # Storage failure: Requirement 10.6
             logger.error("durable_storage_failed", agent=agent_name, error=str(db_exc))
             # Try to mark the investigation as failed due to storage issues
@@ -119,6 +146,12 @@ async def execute_agent_node(
             }
 
     except Exception as exc:
+        if run_tree:
+            try:
+                run_tree.end(error=str(exc))
+                run_tree.post()
+            except Exception:
+                pass
         # Catch and record any failure in the orchestrator pipeline: Requirement 10.2
         logger.error("agent_node_failed", agent=agent_name, error=str(exc))
         

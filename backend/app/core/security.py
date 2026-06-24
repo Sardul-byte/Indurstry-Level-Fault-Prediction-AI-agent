@@ -25,14 +25,14 @@ SENSITIVE_PATTERNS = {
     "EMAIL": re.compile(r"\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b"),
     # General Key-value credentials (e.g., password=foo, api_key="bar")
     "KEY_VALUE_CREDENTIALS": re.compile(
-        r'(?i)\b(password|passwd|pwd|pass|secret|api_key|apikey|auth_token|token|session_id|private_key)\b\s*[:=]\s*(["\']?)([^"\';\s,]{4,})\2'
+        r'(?i)(["\']?)\b(password|passwd|pwd|pass|secret|api_key|apikey|auth_token|token|session_id|private_key)\b\1\s*[:=]\s*(["\']?)([^"\';\s,]{4,})\3'
     ),
 }
 
 # Generic api_key format (e.g. sk-proj-...)
 API_KEY_PATTERNS = [
-    re.compile(r"\bsk-[a-zA-Z0-9]{48}\b"),
-    re.compile(r"\bAIza[0-9A-Za-z-_]{35}\b"),
+    re.compile(r"\bsk-(?:proj-)?[a-zA-Z0-9-_]{30,60}\b"),
+    re.compile(r"\bAIza[0-9A-Za-z-_]{30,45}\b"),
 ]
 
 def sanitize_logs(text: str) -> str:
@@ -77,19 +77,18 @@ def sanitize_logs(text: str) -> str:
 
     # Clean custom key/value credentials like password=xxx or token: "xxx"
     def mask_key_value(match: re.Match) -> str:
-        key = match.group(1)
-        quote = match.group(2)
-        val = match.group(3)
-        # If it's already redacted or too short to be a real secret, keep it
+        quote_key = match.group(1)
+        key = match.group(2)
+        quote_val = match.group(3)
+        val = match.group(4)
         if "REDACTED" in val or len(val) < 4:
             return match.group(0)
-        return f"{key}={quote}[REDACTED_{key.upper()}]{quote}"
+        sep = ":" if ":" in match.group(0) else "="
+        return f"{quote_key}{key}{quote_key}{sep}{quote_val}[REDACTED_{key.upper()}]{quote_val}"
 
     # Replace key=value credentials
     sanitized = SENSITIVE_PATTERNS["KEY_VALUE_CREDENTIALS"].sub(
-        lambda m: f"{m.group(1)}: {m.group(2)}[REDACTED_{m.group(1).upper()}]{m.group(2)}" 
-        if ":" in m.group(0) 
-        else f"{m.group(1)}={m.group(2)}[REDACTED_{m.group(1).upper()}]{m.group(2)}",
+        mask_key_value,
         sanitized
     )
 

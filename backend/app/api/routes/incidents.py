@@ -85,6 +85,13 @@ async def run_investigation_workflow(
                         }
         except Exception as db_exc:
             logger.error("background_workflow_db_update_failed", error=str(db_exc))
+    finally:
+        # Trigger RAGAS evaluation on terminal state (completed/failed)
+        try:
+            from app.evaluation.ragas_evaluator import evaluate_investigation
+            await evaluate_investigation(investigation_id)
+        except Exception as eval_exc:
+            logger.error("ragas_evaluation_trigger_failed", investigation_id=investigation_id, error=str(eval_exc))
 
 
 @router.post(
